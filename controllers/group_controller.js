@@ -37,7 +37,8 @@ exports.post_group = [
   AsyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty())
-      return res.json({ errors: errors.array.map((err) => err.msg) });
+      return res.json({ errors: errors.array().map((err) => err.msg) });
+
     try {
       const newGroup = new Group_Model({
         name: req.body.name,
