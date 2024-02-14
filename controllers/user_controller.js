@@ -2,7 +2,6 @@ const AsyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
 const User_Model = require('../models/user_model');
 const bcrypt = require('bcryptjs');
-const validator = require('./validators/user_validators');
 require('dotenv').config();
 
 exports.get_users = [
@@ -21,7 +20,6 @@ exports.get_users = [
 
 // sign up route
 exports.post_user = [
-  validator.post_user_validation,
   AsyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     console.log(req.body);
@@ -58,7 +56,6 @@ exports.post_user = [
 ];
 
 exports.update_user = [
-  validator.update_user_validation,
   AsyncHandler(async (req, res, next) => {
     try {
       const errors = validationResult(req);

@@ -8,7 +8,6 @@
 
 // Todos
 
-- Auth with JWT
 - Group routes
   - Get all groups
   - Get specific group

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const { DateTime } = require('luxon');
 
 const GroupSchema = new Schema({
-  name: { type: String, default: 'group', require: true },
+  name: { type: String, default: 'group', required: true },
   message: { type: String, default: 'new group' },
   admin: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }],

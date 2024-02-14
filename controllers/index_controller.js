@@ -4,7 +4,6 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User_Model = require('../models/user_model');
-const validators = require('./validators/index_validators');
 
 exports.get_index = [
   AsyncHandler(async (req, res, next) => {
@@ -13,7 +12,6 @@ exports.get_index = [
 ];
 
 exports.post_log_in = [
-  validators.login_validator,
   AsyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
 
@@ -32,7 +30,7 @@ exports.post_log_in = [
       return res.json({ errors: ['Incorrect Password'] });
     }
 
-    const token = jwt.sign({ email: req.body.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user[0]._id }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
