@@ -1,14 +1,17 @@
 const AsyncHandler = require('express-async-handler');
-const { body, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 const User_Model = require('../models/user_model');
 const bcrypt = require('bcryptjs');
-
+const validator = require('./validators/user_validators');
 require('dotenv').config();
 
 exports.get_users = [
   AsyncHandler(async (req, res, next) => {
     try {
-      const users = await User_Model.find({}).exec();
+      const users = await User_Model.find(
+        {},
+        'username email created_at'
+      ).exec();
       res.json(users);
     } catch (e) {
       return next(e);
@@ -18,25 +21,22 @@ exports.get_users = [
 
 // sign up route
 exports.post_user = [
-  body('email')
-    .trim()
-    .notEmpty()
-    .withMessage('Email should not be empty')
-    .isEmail()
-    .withMessage('Please enter a valid email adress')
-    .escape(),
-  body('password')
-    .trim()
-    .isLength({ min: 6 })
-    .withMessage('Password should be at least 6 characters long')
-    .escape(),
-  body('username', 'username should not be empty').trim().notEmpty().escape(),
-  body('profile_pic_url').trim(),
+  validator.post_user_validation,
   AsyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     console.log(req.body);
     if (!errors.isEmpty())
       return res.json({ errors: errors.array().map((err) => err.msg) });
+
+    // make sure user does not already exist with same email
+    const existingUser = await User_Model.find({
+      email: req.body.email,
+    }).exec();
+
+    if (existingUser[0])
+      return res.json({
+        errors: [`User with email: ${req.body.email} already exists`],
+      });
 
     bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
       if (err) {
@@ -58,20 +58,7 @@ exports.post_user = [
 ];
 
 exports.update_user = [
-  body('email')
-    .trim()
-    .isEmail()
-    .withMessage('Please use valid email address')
-    .optional()
-    .escape(),
-  body('password')
-    .optional()
-    .trim()
-    .isLength({ min: 6 })
-    .withMessage('password should be at least 6 characters long')
-    .escape(),
-  body('username').optional().trim().escape(),
-  body('profile_pic_url').optional().trim(),
+  validator.update_user_validation,
   AsyncHandler(async (req, res, next) => {
     try {
       const errors = validationResult(req);
@@ -87,7 +74,6 @@ exports.update_user = [
       if (req.body.username) userData.username = req.body.username;
       if (req.body.profile_pic_url)
         userData.profile_pic_url = req.body.profile_pic_url;
-
       if (req.body.password) {
         const hash = await bcrypt.hash(req.body.password, 10);
         console.log(hash);
