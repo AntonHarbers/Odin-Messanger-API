@@ -15,12 +15,32 @@ router.post(
   groupController.post_group
 );
 
-router.patch('/:id', authenticateJWT, groupController.update_group);
-router.patch('/:id/add', authenticateJWT, groupController.add_group_member);
+router.patch(
+  '/:id',
+  authenticateJWT,
+  validators.update_group_validator,
+  groupController.update_group
+);
+
+router.patch(
+  '/:id/add',
+  authenticateJWT,
+  validators.change_group_member_validator,
+  groupController.add_group_member
+);
+
 router.patch(
   '/:id/remove',
   authenticateJWT,
+  validators.change_group_member_validator,
   groupController.remove_group_member
+);
+
+router.patch(
+  '/:id/admin',
+  authenticateJWT,
+  validators.replace_admin_validator,
+  groupController.replace_admin
 );
 
 router.delete('/:id', authenticateJWT, groupController.delete_group);
