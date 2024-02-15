@@ -4,6 +4,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User_Model = require('../models/user_model');
+const validationResultHandling = require('../middleware/validationResultHandling');
 
 exports.get_index = [
   AsyncHandler(async (req, res, next) => {
@@ -12,12 +13,8 @@ exports.get_index = [
 ];
 
 exports.post_log_in = [
+  validationResultHandling,
   AsyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty())
-      return res.json({ errors: errors.array().map((err) => err.msg) });
-
     const user = await User_Model.find({ email: req.body.email }).exec();
 
     if (user.length == 0)

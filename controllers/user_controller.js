@@ -2,6 +2,8 @@ const AsyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
 const User_Model = require('../models/user_model');
 const bcrypt = require('bcryptjs');
+const validationResultHandling = require('../middleware/validationResultHandling');
+
 require('dotenv').config();
 
 exports.get_users = [
@@ -20,12 +22,8 @@ exports.get_users = [
 
 // sign up route
 exports.post_user = [
+  validationResultHandling,
   AsyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    console.log(req.body);
-    if (!errors.isEmpty())
-      return res.json({ errors: errors.array().map((err) => err.msg) });
-
     // make sure user does not already exist with same email
     const existingUser = await User_Model.find({
       email: req.body.email,
@@ -56,15 +54,9 @@ exports.post_user = [
 ];
 
 exports.update_user = [
+  validationResultHandling,
   AsyncHandler(async (req, res, next) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ errors: errors.array().map((err) => err.msg) });
-      }
-
       const userData = {};
 
       if (req.body.email) userData.email = req.body.email;
