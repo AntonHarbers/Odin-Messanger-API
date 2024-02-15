@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const groupController = require('../controllers/group_controller');
 const authenticateJWT = require('../middleware/authenticateJWT');
+const groupAdminAuth = require('../middleware/groupAdminAuth');
 const validators = require('../controllers/validators/group_validators');
 
 /* GET users listing. */
@@ -18,6 +19,7 @@ router.post(
 router.patch(
   '/:id',
   authenticateJWT,
+  groupAdminAuth,
   validators.update_group_validator,
   groupController.update_group
 );
@@ -25,6 +27,7 @@ router.patch(
 router.patch(
   '/:id/add',
   authenticateJWT,
+  groupAdminAuth,
   validators.change_group_member_validator,
   groupController.add_group_member
 );
@@ -32,6 +35,7 @@ router.patch(
 router.patch(
   '/:id/remove',
   authenticateJWT,
+  groupAdminAuth,
   validators.change_group_member_validator,
   groupController.remove_group_member
 );
@@ -39,10 +43,16 @@ router.patch(
 router.patch(
   '/:id/admin',
   authenticateJWT,
+  groupAdminAuth,
   validators.replace_admin_validator,
   groupController.replace_admin
 );
 
-router.delete('/:id', authenticateJWT, groupController.delete_group);
+router.delete(
+  '/:id',
+  authenticateJWT,
+  groupAdminAuth,
+  groupController.delete_group
+);
 
 module.exports = router;

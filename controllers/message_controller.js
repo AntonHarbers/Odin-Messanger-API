@@ -2,6 +2,7 @@ const AsyncHandler = require('express-async-handler');
 const message_model = require('../models/message_model');
 const group_model = require('../models/group_model');
 const { validationResult } = require('express-validator');
+const validationResultHandling = require('../middleware/validationResultHandling');
 
 exports.get_messages = [
   AsyncHandler(async (req, res, next) => {
@@ -40,13 +41,8 @@ exports.get_group_messages = [
 ];
 
 exports.post_message = [
+  validationResultHandling,
   AsyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ errors: errors.array().map((err) => err.msg) });
-    }
     try {
       const group = await group_model.findById(req.body.group).exec();
 
@@ -72,13 +68,8 @@ exports.post_message = [
 ];
 
 exports.update_message = [
+  validationResultHandling,
   AsyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ errors: errors.array().map((err) => err.msg) });
-    }
     try {
       const message = await message_model.findById(req.params.id).exec();
 
