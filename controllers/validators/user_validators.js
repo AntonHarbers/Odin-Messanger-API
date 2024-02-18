@@ -14,7 +14,7 @@ exports.post_user_validation = [
     .withMessage('Password should be at least 6 characters long')
     .escape(),
   body('username', 'username should not be empty').trim().notEmpty().escape(),
-  body('profile_pic_url').trim(),
+  body('profile_pic_url').optional().trim().isURL(),
 ];
 
 exports.update_user_validation = [
@@ -31,5 +31,5 @@ exports.update_user_validation = [
     .withMessage('password should be at least 6 characters long')
     .escape(),
   body('username').optional().trim().escape(),
-  body('profile_pic_url').optional().trim(),
+  body('profile_pic_url', 'Please use valid url').optional().trim().isURL(),
 ];

@@ -31,25 +31,24 @@ exports.post_log_in = [
       expiresIn: '1h',
     });
 
-    res.json(token);
+    res.json([token]);
   }),
 ];
 
 exports.get_session = [
   AsyncHandler(async (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
-
     try {
       const decodedToken = jwt.decode(token);
       const currentTime = Math.floor(Date.now() / 1000); // current time in seconds
       const timeLeft = decodedToken.exp - currentTime;
-
       res.json({
         message: 'You are signed in',
         expiresIn: timeLeft > 0 ? `${timeLeft} seconds` : 'Token expired',
+        userId: req.user.id,
       });
     } catch (error) {
-      res.status(400).json({ errors: ['Invalid Token'] });
+      res.json({ errors: ['Invalid Token'] });
     }
   }),
 ];
