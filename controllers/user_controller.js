@@ -1,8 +1,11 @@
 const AsyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
 const User_Model = require('../models/user_model');
+const Group_Model = require('../models/group_model');
+const Message_Model = require('../models/message_model');
 const bcrypt = require('bcryptjs');
 const validationResultHandling = require('../middleware/validationResultHandling');
+const { default: mongoose } = require('mongoose');
 
 require('dotenv').config();
 
@@ -98,11 +101,54 @@ exports.get_user = [
 
 exports.delete_user = [
   AsyncHandler(async (req, res, next) => {
+    const session = await mongoose.startSession();
     try {
-      const deleted_user = await User_Model.findByIdAndDelete(req.params.id);
-      res.json({ deleted_user });
+      session.startTransaction();
+      // get all the groups where user is in the members array, delete user id from members list
+      await Group_Model.updateMany(
+        { members: req.params.id },
+        { $pull: { members: req.params.id } },
+        { session }
+      ).exec();
+      // get all the groups where user_id is the admin
+      const adminGroups = await Group_Model.find({ admin: req.params.id })
+        .select('_id')
+        .lean()
+        .session(session)
+        .exec();
+      const groupIds = adminGroups.map((group) => group._id);
+      //delete all messages associated with those groups
+      await Message_Model.deleteMany(
+        { group: { $in: groupIds } },
+        { session }
+      ).exec();
+      //and then delete the groups
+      await Group_Model.deleteMany(
+        { _id: { $in: groupIds } },
+        { session }
+      ).exec();
+
+      // find all messages where the sender_id is the user_id and set that user id to the deleted user profile
+      await Message_Model.updateMany(
+        { sender: req.params.id },
+        { $set: { sender: process.env.DELETED_USER_ID } },
+        { session }
+      ).exec();
+      const deleted_user = await User_Model.findByIdAndDelete(req.params.id, {
+        session,
+      }).exec();
+
+      await session.commitTransaction();
+      res.json({
+        message: 'User and related data successfully deleted',
+        deleted_user: deleted_user ? deleted_user : null,
+      });
     } catch (e) {
+      await session.abortTransaction();
+
       return next(e);
+    } finally {
+      session.endSession();
     }
   }),
 ];

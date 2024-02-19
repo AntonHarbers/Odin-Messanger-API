@@ -2,6 +2,8 @@ const AsyncHandler = require('express-async-handler');
 const Group_Model = require('../models/group_model');
 const user_model = require('../models/user_model');
 const validationResultHandling = require('../middleware/validationResultHandling');
+const { default: mongoose } = require('mongoose');
+const message_model = require('../models/message_model');
 
 exports.get_groups = [
   AsyncHandler(async (req, res, next) => {
@@ -166,7 +168,31 @@ exports.replace_admin = [
 
 exports.delete_group = [
   AsyncHandler(async (req, res, next) => {
-    const deletedGroup = await Group_Model.findByIdAndDelete(req.params.id);
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+
+      await message_model
+        .deleteMany({ group: req.params.id }, { session })
+        .exec();
+
+      const deletedGroup = await Group_Model.findByIdAndDelete(req.params.id, {
+        session,
+      }).exec();
+
+      await session.commitTransaction();
+      res.json({
+        message: 'Group and group message data succesfully deleted',
+        deleted_group: deletedGroup,
+      });
+    } catch (e) {
+      await session.abortTransaction();
+      return next(e);
+    } finally {
+      session.endSession();
+    }
+    // delete all messages that correspond to this group_id
+
     res.json(deletedGroup);
   }),
 ];
