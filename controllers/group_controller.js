@@ -41,12 +41,13 @@ exports.get_group = [
 exports.post_group = [
   validationResultHandling,
   AsyncHandler(async (req, res, next) => {
+    console.log(req.body);
     try {
       const newGroup = new Group_Model({
         name: req.body.name,
         message: req.body.message ? req.body.message : 'Welcome',
         admin: req.body.admin,
-        members: JSON.parse(req.body.members),
+        members: req.body.members,
         profile_pic_url: req.body.profile_pic_url
           ? req.body.profile_pic_url
           : '',
@@ -56,6 +57,7 @@ exports.post_group = [
 
       res.json(newGroup);
     } catch (e) {
+      console.log(e);
       return next(e);
     }
   }),
