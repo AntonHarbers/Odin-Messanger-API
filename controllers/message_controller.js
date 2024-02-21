@@ -30,9 +30,11 @@ exports.get_group_messages = [
       if (!group.members.includes(req.user.id))
         return res.status(404).json({ errors: ['User not in this group'] });
 
-      const groupMessages = await message_model.find({
-        group: req.params.group,
-      });
+      const groupMessages = await message_model
+        .find({
+          group: req.params.group,
+        })
+        .populate('sender', 'username');
       res.json({ groupMessages });
     } catch (e) {
       return next(e);
@@ -59,6 +61,8 @@ exports.post_message = [
       });
 
       await newMessage.save();
+
+      await newMessage.populate('sender', 'username');
       // make sure user is in the group
       res.json(newMessage);
     } catch (e) {

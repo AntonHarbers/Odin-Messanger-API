@@ -55,4 +55,6 @@ router.delete(
   groupController.delete_group
 );
 
+// router.delete('/', groupController.delete_all_groups);
+
 module.exports = router;

@@ -4,6 +4,7 @@ const user_model = require('../models/user_model');
 const validationResultHandling = require('../middleware/validationResultHandling');
 const { default: mongoose } = require('mongoose');
 const message_model = require('../models/message_model');
+const group_model = require('../models/group_model');
 
 exports.get_groups = [
   AsyncHandler(async (req, res, next) => {
@@ -54,6 +55,7 @@ exports.post_group = [
       });
 
       await newGroup.save();
+      await newGroup.populate('members admin', 'username email');
 
       res.json(newGroup);
     } catch (e) {
@@ -72,8 +74,8 @@ exports.update_group = [
       if (req.body.message) req.group.message = req.body.message;
       if (req.body.profile_pic_url)
         req.group.profile_pic_url = req.body.profile_pic_url;
-
       await req.group.save();
+      await req.group.populate('members admin', 'username email');
 
       res.json(req.group);
     } catch (error) {
@@ -100,7 +102,7 @@ exports.add_group_member = [
       req.group.members.push(req.body.member);
 
       await req.group.save();
-
+      await req.group.populate('admin members', 'username email');
       res.json(req.group);
     } catch (e) {
       return next(e);
@@ -133,6 +135,7 @@ exports.remove_group_member = [
       req.group.members = newMembers;
 
       await req.group.save();
+      await req.group.populate('members admin', 'username email');
 
       res.json(req.group);
     } catch (e) {
@@ -167,6 +170,11 @@ exports.replace_admin = [
     }
   }),
 ];
+
+exports.delete_all_groups = AsyncHandler(async (req, res, next) => {
+  await group_model.deleteMany({}).exec();
+  res.json('ok');
+});
 
 exports.delete_group = [
   AsyncHandler(async (req, res, next) => {
