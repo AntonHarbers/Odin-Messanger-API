@@ -14,7 +14,6 @@ var groupsRouter = require('./routes/group_routes');
 var helmet = require('helmet');
 var compression = require('compression');
 var RateLimit = require('express-rate-limit');
-
 require('dotenv').config();
 
 var app = express();

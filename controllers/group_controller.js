@@ -12,7 +12,7 @@ exports.get_groups = [
       const user_groups = await Group_Model.find({
         members: req.user.id,
       })
-        .populate('members', 'username')
+        .populate('members', 'username profile_pic_url')
         .populate('admin', 'username')
         .exec();
       res.json(user_groups);
@@ -55,7 +55,10 @@ exports.post_group = [
       });
 
       await newGroup.save();
-      await newGroup.populate('members admin', 'username email');
+      await newGroup.populate(
+        'members admin',
+        'username email profile_pic_url'
+      );
 
       res.json(newGroup);
     } catch (e) {
@@ -75,7 +78,10 @@ exports.update_group = [
       if (req.body.profile_pic_url)
         req.group.profile_pic_url = req.body.profile_pic_url;
       await req.group.save();
-      await req.group.populate('members admin', 'username email');
+      await req.group.populate(
+        'members admin',
+        'username email profile_pic_url'
+      );
 
       res.json(req.group);
     } catch (error) {
@@ -102,7 +108,10 @@ exports.add_group_member = [
       req.group.members.push(req.body.member);
 
       await req.group.save();
-      await req.group.populate('admin members', 'username email');
+      await req.group.populate(
+        'admin members',
+        'username email profile_pic_url'
+      );
       res.json(req.group);
     } catch (e) {
       return next(e);
@@ -135,7 +144,10 @@ exports.remove_group_member = [
       req.group.members = newMembers;
 
       await req.group.save();
-      await req.group.populate('members admin', 'username email');
+      await req.group.populate(
+        'members admin',
+        'username email profile_pic_url'
+      );
 
       res.json(req.group);
     } catch (e) {
