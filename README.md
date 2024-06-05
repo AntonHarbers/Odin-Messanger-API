@@ -1,7 +1,7 @@
 # Messaging App API - The Odin Project
 
-[API Endpoint]()
+[API Endpoint](https://cut-easy-overcoat.glitch.me/)
 
-[App Live Link]()
+[App Live Link](https://odinmessagesclient.netlify.app/)
 
-[App Repo]()
+[Frontend Repo](https://github.com/AntonHarbers/OdinMessengerClient)
